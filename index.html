@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotinas da Equipe — Comunicação e Marketing · Rede Damas</title>
+
+<!-- ============================================================
+  CONFIGURAÇÃO — cole aqui a URL da sua planilha publicada
+  
+  Como obter a URL:
+  1. Abra a planilha no Google Sheets
+  2. Arquivo → Compartilhar → Publicar na web
+  3. Selecione a aba correta e formato CSV
+  4. Clique em "Publicar" e copie a URL gerada
+  5. Cole abaixo substituindo o valor de SHEETS_URL
+============================================================ -->
+<script>
+  const SHEETS_URL = https://docs.google.com/spreadsheets/d/e/2PACX-1vQmvyDcoteoyveYlkmQmmwn49ns5By9cwLjvmWkPfiLibGffsluDI3hL0sclI8a99gceu1-YLqQ3bi4/pub?gid=2100518379&single=true&output=csv;
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue: #0A3272;
+  --blue-mid: #1A5AAA;
+  --blue-light: #E6F1FB;
+  --gold: #C98010;
+  --gold-light: #FEF3DC;
+  --text: #1a1a1a;
+  --text-muted: #5a5a6a;
+  --border: rgba(0,0,0,0.10);
+  --bg: #f4f6fa;
+  --card: #ffffff;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.site-header {
+  background: var(--blue);
+  color: #fff;
+  padding: 28px 40px 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.site-header h1 { font-family: 'DM Serif Display', serif; font-size: 26px; font-weight: 400; line-height: 1.2; }
+.site-header h1 span { color: #F5C458; }
+.site-header p { font-size: 13px; opacity: 0.65; margin-top: 4px; }
+.last-update { font-size: 11px; opacity: 0.5; white-space: nowrap; }
+
+/* NAV */
+.layer-nav { background: var(--card); border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; gap: 0; overflow-x: auto; }
+.layer-btn { padding: 14px 22px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.layer-btn:hover { color: var(--blue); }
+.layer-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* MAIN */
+main { padding: 32px 40px 60px; max-width: 1300px; margin: 0 auto; }
+.layer-section { display: none; }
+.layer-section.active { display: block; }
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+/* CARD */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: box-shadow 0.15s; }
+.card:hover { box-shadow: 0 4px 20px rgba(10,50,114,0.08); }
+.card-head { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; color: #fff; }
+.card-name { font-size: 15px; font-weight: 600; }
+.card-role { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* FREQ TABS */
+.freq-tabs { display: flex; background: #f8f9fb; border-bottom: 1px solid var(--border); }
+.freq-btn { flex: 1; padding: 9px 6px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; text-align: center; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); cursor: pointer; transition: all 0.12s; }
+.freq-btn:hover { color: var(--blue); }
+.freq-btn.active { color: var(--blue); border-bottom-color: var(--blue); background: #fff; }
+
+/* TASKS */
+.freq-panel { display: none; padding: 14px 18px 16px; }
+.freq-panel.active { display: block; }
+.task-list { list-style: none; }
+.task-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.task-item:last-child { border-bottom: none; }
+.task-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: 7px; }
+.task-text { font-size: 13px; line-height: 1.55; color: var(--text); }
+.task-empty { font-size: 13px; color: var(--text-muted); font-style: italic; padding: 8px 0; }
+
+/* LOADING / ERROR STATES */
+.state-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; text-align: center; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-title { font-size: 16px; font-weight: 500; color: var(--text); }
+.state-sub { font-size: 13px; color: var(--text-muted); max-width: 420px; line-height: 1.6; }
+.config-box { background: var(--gold-light); border: 1px solid var(--gold); border-radius: var(--radius-sm); padding: 16px 20px; max-width: 520px; text-align: left; margin-top: 8px; }
+.config-box p { font-size: 13px; color: var(--text); line-height: 1.7; }
+.config-box code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-size: 12px; word-break: break-all; }
+.btn-retry { margin-top: 8px; padding: 9px 20px; border-radius: 40px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; }
+.btn-retry:hover { background: var(--bg); }
+
+@media (max-width: 700px) {
+  .site-header, main { padding-left: 20px; padding-right: 20px; }
+  .layer-nav { padding: 0 12px; }
+  .people-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div>
+    <h1>Rotinas · <span>Comunicação e Marketing</span></h1>
+    <p>Rede Damas Educacional · Atividades diárias, semanais e mensais</p>
+  </div>
+  <span class="last-update" id="last-update"></span>
+</header>
+
+<nav class="layer-nav" id="layer-nav" style="display:none">
+  <!-- Gerado dinamicamente -->
+</nav>
+
+<main id="main-content">
+  <div class="state-screen" id="loading-state">
+    <div class="spinner"></div>
+    <p class="state-title">Carregando dados da equipe…</p>
+    <p class="state-sub">Buscando informações da planilha do Google Sheets.</p>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+// ─── Estado ───────────────────────────────────────────────────
+let allData = [];
+let layers = [];
+let activeLayer = null;
+
+// ─── Inicialização ────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (!SHEETS_URL || SHEETS_URL === 'COLE_AQUI_A_URL_DA_SUA_PLANILHA_PUBLICADA') {
+    showConfigError();
+    return;
+  }
+  loadData();
+});
+
+// ─── Carrega dados do Google Sheets ───────────────────────────
+// Usa fetch nativo com proxy CORS para evitar bloqueios de redirect e file://
+const PROXY = 'https://corsproxy.io/?';
+
+async function loadData() {
+  showLoading();
+  const urls = [
+    SHEETS_URL,                   // tenta direto primeiro (funciona no Netlify)
+    PROXY + encodeURIComponent(SHEETS_URL)  // fallback com proxy
+  ];
+
+  for (const url of urls) {
+    try {
+      const resp = await fetch(url, { signal: AbortSignal.timeout(12000) });
+      if (!resp.ok) continue;
+      const text = await resp.text();
+      if (!text || text.trim().length < 10) continue;
+
+      const results = Papa.parse(text, { header: true, skipEmptyLines: true });
+      if (!results.data || results.data.length === 0) continue;
+
+      allData = results.data;
+      processAndRender();
+      return;
+    } catch (e) {
+      // tenta próxima URL
+    }
+  }
+
+  showError(
+    'Não foi possível carregar a planilha. Verifique se:<br><br>' +
+    '• A URL está correta e colada dentro das aspas<br>' +
+    '• A planilha está publicada em <em>Arquivo → Compartilhar → Publicar na web</em><br>' +
+    '• O formato escolhido na publicação é <strong>CSV</strong>'
+  );
+}
+
+// ─── Processa CSV e monta estrutura ───────────────────────────
+function processAndRender() {
+  // Extrair camadas únicas em ordem
+  const layerMap = new Map();
+  const personOrder = new Map(); // pessoa → primeira posição encontrada
+
+  allData.forEach(row => {
+    const lid = row.camada?.trim();
+    const llabel = row.camada_label?.trim();
+    const ldesc = row.camada_desc?.trim();
+    const pessoa = row.pessoa?.trim();
+
+    if (!lid || !llabel) return;
+    if (!layerMap.has(lid)) layerMap.set(lid, { id: lid, label: llabel, desc: ldesc, pessoas: new Map() });
+
+    const layer = layerMap.get(lid);
+    if (!layer.pessoas.has(pessoa)) {
+      layer.pessoas.set(pessoa, {
+        pessoa,
+        cargo: row.cargo?.trim() || '',
+        avatar_iniciais: row.avatar_iniciais?.trim() || pessoa.substring(0,2).toUpperCase(),
+        avatar_cor: row.avatar_cor?.trim() || '#0A3272',
+        atividades: { Diária: [], Semanal: [], Mensal: [] }
+      });
+    }
+
+    const freq = row.frequencia?.trim();
+    const ativ = row.atividade?.trim();
+    if (freq && ativ && layer.pessoas.get(pessoa).atividades[freq]) {
+      layer.pessoas.get(pessoa).atividades[freq].push(ativ);
+    }
+  });
+
+  layers = Array.from(layerMap.values()).sort((a,b) => Number(a.id) - Number(b.id));
+
+  if (layers.length === 0) {
+    showError('Nenhuma camada encontrada. Verifique se a planilha tem os cabeçalhos corretos.');
+    return;
+  }
+
+  buildNav();
+  activeLayer = layers[0].id;
+  renderAll();
+  updateTimestamp();
+}
+
+// ─── Nav ──────────────────────────────────────────────────────
+function buildNav() {
+  const nav = document.getElementById('layer-nav');
+  nav.innerHTML = '';
+  layers.forEach((layer, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'layer-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = layer.label;
+    btn.onclick = () => switchLayer(layer.id, btn);
+    nav.appendChild(btn);
+  });
+  nav.style.display = 'flex';
+}
+
+// ─── Renderiza todas as seções ────────────────────────────────
+function renderAll() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '';
+
+  layers.forEach((layer, i) => {
+    const section = document.createElement('div');
+    section.id = 'layer-' + layer.id;
+    section.className = 'layer-section' + (i === 0 ? ' active' : '');
+
+    const label = document.createElement('p');
+    label.className = 'section-label';
+    label.textContent = layer.desc || layer.label;
+    section.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'people-grid';
+
+    layer.pessoas.forEach(p => {
+      grid.appendChild(buildPersonCard(p));
+    });
+
+    section.appendChild(grid);
+    main.appendChild(section);
+  });
+}
+
+// ─── Card de pessoa ───────────────────────────────────────────
+function buildPersonCard(p) {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  // Cabeçalho
+  const head = document.createElement('div');
+  head.className = 'card-head';
+  head.innerHTML = `
+    <div class="avatar" style="background:${escHtml(p.avatar_cor)}">${escHtml(p.avatar_iniciais)}</div>
+    <div>
+      <div class="card-name">${escHtml(p.pessoa)}</div>
+      <div class="card-role">${escHtml(p.cargo)}</div>
+    </div>`;
+  card.appendChild(head);
+
+  // Tabs de frequência
+  const freqKeys = ['Diária', 'Semanal', 'Mensal'];
+  const tabs = document.createElement('div');
+  tabs.className = 'freq-tabs';
+  freqKeys.forEach((f, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'freq-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = f;
+    btn.onclick = () => switchFreq(btn);
+    tabs.appendChild(btn);
+  });
+  card.appendChild(tabs);
+
+  // Painéis de atividades
+  freqKeys.forEach((f, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'freq-panel' + (i === 0 ? ' active' : '');
+    const tasks = p.atividades[f] || [];
+    if (tasks.length === 0) {
+      panel.innerHTML = `<p class="task-empty">Nenhuma atividade cadastrada.</p>`;
+    } else {
+      const ul = document.createElement('ul');
+      ul.className = 'task-list';
+      tasks.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.innerHTML = `<span class="task-dot"></span><span class="task-text">${escHtml(t)}</span>`;
+        ul.appendChild(li);
+      });
+      panel.appendChild(ul);
+    }
+    card.appendChild(panel);
+  });
+
+  return card;
+}
+
+// ─── Troca de camada ──────────────────────────────────────────
+function switchLayer(id, btn) {
+  document.querySelectorAll('.layer-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+  const sec = document.getElementById('layer-' + id);
+  if (sec) sec.classList.add('active');
+  btn.classList.add('active');
+  activeLayer = id;
+}
+
+// ─── Troca de frequência dentro de um card ───────────────────
+function switchFreq(btn) {
+  const tabs = btn.parentElement.querySelectorAll('.freq-btn');
+  const panels = btn.parentElement.parentElement.querySelectorAll('.freq-panel');
+  const idx = Array.from(tabs).indexOf(btn);
+  tabs.forEach(t => t.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  panels[idx].classList.add('active');
+}
+
+// ─── Timestamp ───────────────────────────────────────────────
+function updateTimestamp() {
+  const el = document.getElementById('last-update');
+  const now = new Date();
+  el.textContent = 'Atualizado em ' + now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ─── Estados de UI ────────────────────────────────────────────
+function showLoading() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="state-screen" id="loading-state">
+      <div class="spinner"></div>
+      <p class="state-title">Carregando dados da equipe…</p>
+      <p class="state-sub">Buscando informações da planilha do Google Sheets.</p>
+    </div>`;
+  document.getElementById('layer-nav').style.display = 'none';
+}
+
+function showError(msg) {
+  document.getElementById('main-content').innerHTML = `
+    <div class="state-screen">
+      <p class="state-title">Não foi possível carregar os dados</p>
+      <p class="state-sub">${msg}</p>
+      <button class="btn-retry" onclick="loadData()">Tentar novamente</button>
+    </div>`;
+}
+
+function showConfigError() {
+  document.getElementById('main-content').innerHTML = `
+    <div class="state-screen">
+      <p class="state-title">Configure a URL da planilha</p>
+      <p class="state-sub">Para que a página funcione, você precisa informar a URL pública da planilha Google Sheets.</p>
+      <div class="config-box">
+        <p><strong>Como configurar:</strong><br>
+        1. Abra este arquivo <code>.html</code> em um editor de texto<br>
+        2. Localize a linha: <code>const SHEETS_URL = 'COLE_AQUI...'</code><br>
+        3. Substitua pelo endereço da planilha publicada<br>
+        4. Salve e suba o arquivo novamente no Netlify</p>
+      </div>
+    </div>`;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
